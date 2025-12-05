@@ -1,0 +1,75 @@
+{"id":"1","title":"IndexError in Python","text":"Always check list length before accessing by index."}
+{"id":"2","title":"NullReference in Java","text":"Ensure the object is not null before calling its method."}
+{"id":"3","title":"Division by Zero","text":"Add guard condition before dividing numbers."}
+{"id":"4","title":"TypeError in Python","text":"Cast or convert values to the expected type before operations."}
+{"id":"5","title":"KeyError in Python dict","text":"Use dict.get(key, default) or check key in dict before access."}
+{"id":"6","title":"AttributeError in Python","text":"Verify object initialization and attribute names; use hasattr when needed."}
+{"id":"7","title":"FileNotFoundError","text":"Check file path/existence; create directories or handle missing files."}
+{"id":"8","title":"JSON decode error","text":"Validate input is valid JSON; wrap json.loads in try/except."}
+{"id":"9","title":"Memory leak in Java","text":"Close streams and release references; use try-with-resources."}
+{"id":"10","title":"Deadlock in Java","text":"Lock in consistent order or use higher-level concurrency primitives."}
+{"id":"11","title":"Race condition (threads)","text":"Protect shared state with mutex/lock or use atomic structures."}
+{"id":"12","title":"SQL injection risk","text":"Use parameterized queries or prepared statements; never string-concatenate SQL."}
+{"id":"13","title":"Off-by-one in loops","text":"Review loop bounds; prefer < length rather than <= length."}
+{"id":"14","title":"Floating point precision","text":"Avoid equality comparisons; compare within a small epsilon tolerance."}
+{"id":"15","title":"Time zone bug","text":"Store times in UTC; convert to local zones only at the edges."}
+{"id":"16","title":"Path separator portability","text":"Use OS path utilities (Path/Pathlib) instead of hardcoded separators."}
+{"id":"17","title":"C++ dangling pointer","text":"Use smart pointers (unique_ptr/shared_ptr) and RAII to manage lifetime."}
+{"id":"18","title":"C++ uninitialized variable","text":"Always initialize variables; enable compiler warnings for uninitialized use."}
+{"id":"19","title":"C++ out-of-bounds vector","text":"Use at() with checks or validate index before access."}
+{"id":"20","title":"JavaScript undefined access","text":"Check obj && obj.prop; use optional chaining (obj?.prop) where supported."}
+{"id":"21","title":"JavaScript promise not awaited","text":"Return or await the Promise to ensure proper sequencing and error handling."}
+{"id":"22","title":"C# null reference","text":"Use null-conditional operator (?.) or guard clauses before use."}
+{"id":"23","title":"C# LINQ deferred exec trap","text":"Materialize with ToList() when multiple enumerations cause issues."}
+{"id":"24","title":"PHP notice: undefined index","text":"Use isset/array_key_exists before array access or provide defaults."}
+{"id":"25","title":"PHP SQL injection","text":"Use PDO prepared statements with bound parameters."}
+{"id":"26","title":"Go nil pointer dereference","text":"Check for nil before method calls; return error + nil pattern."}
+{"id":"27","title":"Go goroutine leak","text":"Ensure goroutines exit via context cancellation or channel close."}
+{"id":"28","title":"Rust borrow checker error","text":"Reduce simultaneous mutable/immutable borrows; clone when ownership needed."}
+{"id":"29","title":"Rust panic on unwrap","text":"Handle Result/Option with match or ?; avoid unwrap in production."}
+{"id":"30","title":"Regex catastrophic backtracking","text":"Use non-greedy qualifiers or atomic groups; simplify the pattern."}
+{"id":"31","title":"HTTP timeout","text":"Set client timeouts and retry policy; avoid infinite waits."}
+{"id":"32","title":"API rate limit","text":"Implement exponential backoff and respect Retry-After headers."}
+{"id":"33","title":"Caching stale data","text":"Include cache invalidation strategy or ETag/Last-Modified checks."}
+{"id":"34","title":"Cross-site scripting (XSS)","text":"HTML-encode user output; use templating that escapes by default."}
+{"id":"35","title":"CORS blocked request","text":"Configure server CORS headers (Access-Control-Allow-Origin, methods)."}
+{"id":"36","title":"Unicode encoding error","text":"Open files with correct encoding (UTF-8) and handle decode errors."}
+{"id":"37","title":"Logging sensitive data","text":"Mask or omit secrets/tokens; centralize logging sanitization."}
+{"id":"38","title":"I/O resource leak","text":"Always close files/sockets; use context managers or try-with-resources."}
+{"id":"39","title":"Thread-unsafe collection","text":"Use concurrent collections or synchronize access."}
+{"id":"40","title":"Python recursion limit","text":"Convert deep recursion to iterative approach or increase sys.setrecursionlimit cautiously."}
+{"id":"41","title":"Numpy broadcasting mismatch","text":"Ensure shapes align; expand dims or reshape prior to vectorized ops."}
+{"id":"42","title":"Pandas SettingWithCopy","text":"Use .loc explicit assignment; avoid chained indexing."}
+{"id":"43","title":"Matplotlib blocking show","text":"Use non-interactive backends or plt.close() in batch scripts."}
+{"id":"44","title":"GPU OOM in ML","text":"Reduce batch size/sequence length; use gradient accumulation or mixed precision."}
+{"id":"45","title":"Model not deterministic","text":"Set random seeds and disable nondeterministic kernels where possible."}
+{"id":"46","title":"Java concurrent modification","text":"Iterate with iterator.remove or collect to new list before removal."}
+{"id":"47","title":"C++ integer overflow","text":"Use wider types or check bounds before arithmetic."}
+{"id":"48","title":"JavaScript floating math bug","text":"Use integer math or libraries (Decimal.js) for money/precision."}
+{"id":"49","title":"Slow SQL query","text":"Add proper indexes, avoid SELECT *, and analyze execution plans."}
+{"id":"50","title":"Duplicate primary key","text":"Use unique constraints and handle conflicts with UPSERT/ON CONFLICT."}
+{"id":"51","title":"CSV parsing error","text":"Specify delimiter/quote/escape options; handle header presence."}
+{"id":"52","title":"Timezone naive datetime","text":"Use timezone-aware objects; normalize to UTC internally."}
+{"id":"53","title":"JWT expired","text":"Check exp and refresh token; implement clock skew tolerance."}
+{"id":"54","title":"Password stored in plain text","text":"Hash with bcrypt/argon2 and use per-user salts."}
+{"id":"55","title":"Unsafe eval/exec","text":"Remove dynamic eval; use safe interpreters or whitelists."}
+{"id":"56","title":"Filesystem race (TOCTOU)","text":"Open with O_EXCL or perform checks and open atomically."}
+{"id":"57","title":"Resource starvation with retry","text":"Add jitter/backoff and circuit breaker to avoid overload."}
+{"id":"58","title":"Docker container timezone","text":"Set TZ env or use UTC; mount /etc/localtime when required."}
+{"id":"59","title":"Kubernetes liveness flapping","text":"Tune probe thresholds/initialDelaySeconds and readiness checks."}
+{"id":"60","title":"UTF-8 BOM surprises","text":"Strip BOM or open files with encoding='utf-8-sig'."}
+{"id":"61","title":"Python: Off-by-one list access","text":"Python lists use 0-based indexing. For a list of size N, the valid indices are 0 to N-1. Accessing index N causes an `IndexError`. Fix: Use `len(list) - 1` for the last element or iterate using `range(len(list))` and check bounds."}
+{"id":"62","title":"Java: Null check necessity","text":"Java methods on object references will throw a `NullPointerException` if the object is `null`. Always check if an object is `null` before calling any method on it, or use Java 8's `Optional` for safer handling."}
+{"id":"63","title":"C++: Vector out-of-bounds","text":"Accessing a C++ `std::vector` element beyond its size using the `[]` operator results in undefined behavior (a common source of crashes). Use `vector.at(index)` to get automatic bounds checking and throw a `std::out_of_range` exception."}
+{"id":"64","title":"Python: Safe attribute access","text":"To prevent `AttributeError` when a variable might be `None` (a common `NoneType` bug), use an explicit check: `if obj is not None:`. If cleaning user input, ensure it's not `None` before calling `.strip()` or similar methods."}
+{"id":"65","title":"Guarding Division by Zero","text":"In most languages (Python, Java, C++), dividing an integer by zero causes an exception (e.g., `ZeroDivisionError`, `ArithmeticException`). Always add an `if` condition to check if the divisor is zero before performing the operation."}
+{"id":"66","title":"Python: File Resource Leak","text":"Python objects that manage external resources, like file handles, must be explicitly closed using `.close()` or, preferably, the `with open(...)` context manager to ensure release even if exceptions occur."}
+{"id":"67","title":"Python: Context Manager for Files","text":"Use the `with open(...) as f:` syntax for file operations. This structure automatically handles resource closure, preventing file resource leaks and ensuring clean code."}
+{"id":"68","title":"Java: Concurrency Race Condition","text":"When a shared variable (like a counter) is modified by multiple threads, the operation must be atomic. Use the `synchronized` keyword on the method, or use atomic classes like `AtomicInteger` to protect the shared state."}
+{"id":"69","title":"Java: Atomic Operations","text":"Classes in `java.util.concurrent.atomic` provide atomic operations (e.g., `incrementAndGet`) for single variables, ensuring thread safety and preventing race conditions without requiring extensive locking."}
+{"id":"70","title":"C++: Memory Allocation and Deallocation","text":"Every use of `new` for a single object requires a corresponding `delete`. Every use of `new[]` for an array requires a corresponding `delete[]`. Failing to deallocate leads to memory leaks, degrading application performance."}
+{"id":"71","title":"C++: Smart Pointers","text":"In modern C++, prefer smart pointers like `std::unique_ptr` or `std::shared_ptr` over raw pointers. Smart pointers automatically manage memory deallocation via RAII (Resource Acquisition Is Initialization), effectively eliminating most manual memory leaks."}
+{"id":"72","title":"SQL Injection Prevention","text":"Never build SQL queries by string concatenation, especially with unvalidated user input. Use **parameterized queries** or **prepared statements** provided by your database driver to separate the SQL code from the user data."}
+{"id":"73","title":"Python: Safe SQL Queries","text":"Use placeholder syntax (`%s` for old style, or `?` or named placeholders) with your database connector's `cursor.execute()` method to pass user input as data, preventing SQL injection attacks."}
+{"id":"74","title":"Logic: Infinite Loops","text":"An infinite loop occurs when the loop's termination condition is never met. Ensure that the loop counter or the state variable used in the `while` or `for` condition is modified correctly (e.g., incremented or decremented) within the loop body."}
+{"id":"75","title":"Python: Fixing Infinite Loops","text":"In a `while` loop that iterates over a list index, ensure the index variable (`i` in your case) is incremented on every iteration using `i += 1` to prevent the condition from remaining perpetually true, thus avoiding an infinite loop."}

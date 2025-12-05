@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="auth-card">
+  <h2>Set a new password</h2>
+  <form method="post" class="form-grid">
+    <label>
+      <span>New password</span>
+      <input type="password" name="password" required minlength="6" placeholder="••••••••">
+    </label>
+    <label>
+      <span>Confirm password</span>
+      <input type="password" name="confirm" required minlength="6" placeholder="••••••••">
+    </label>
+    <button class="btn btn-primary" type="submit">Update password</button>
+  </form>
+</section>
+{% endblock %}

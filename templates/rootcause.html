@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="card" style="padding:1rem">
+  <h2 style="margin:0 0 1rem">Root-Cause Distribution</h2>
+  <div style="height:420px"><canvas id="causeChart"></canvas></div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+<script>
+  const ctx = document.getElementById('causeChart').getContext('2d');
+  let chart;
+
+  // Helper function to split long text into multiple lines for the tooltip
+  function wrapText(text, maxLen = 50) {
+      if (!text) return [''];
+      // Use a regular expression to find splits near the maxLen, prioritizing spaces
+      const regex = new RegExp(`.{1,${maxLen}}(\\s|$)|.{1,${maxLen}}`, 'g');
+      return text.match(regex).map(s => s.trim());
+  }
+
+  async function fetchData(){ 
+    // Fetch includes keyword_map (full descriptions) from the backend
+    const res = await fetch('/rootcause_data'); 
+    return res.json(); 
+  }
+  
+  async function draw(){
+    const {labels, counts, keyword_map} = await fetchData();
+    
+    if(chart) chart.destroy();
+    
+    chart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets:[{ data:counts, backgroundColor:['#4e79a7','#f28e2b','#e15759','#76b7b2','#59a14f','#edc948','#b07aa1','#ff9da7'] }]
+      },
+      options: {
+        plugins:{ 
+            legend:{position:'bottom'},
+            tooltip: {
+                callbacks: {
+                    // Set the Title to the abbreviated keyword
+                    title: function(context) {
+                        return context[0].label;
+                    },
+                    // Display the full description as a multi-line paragraph
+                    label: function(context) {
+                        const label = context.label || '';
+                        // Get the full description
+                        const fullDescription = keyword_map[label] || `(No description found for ${label})`;
+                        const value = context.formattedValue;
+
+                        // Wrap the long text into an array of strings (the "paragraph")
+                        const wrappedText = wrapText(fullDescription, 50);
+
+                        // Add the count to the first line and return the array
+                        wrappedText.unshift(`Count: ${value}`); // Add count as the first line of the label body
+                        return wrappedText;
+                    }
+                }
+            }
+        },
+        animation:{ animateScale:true }
+      }
+    });
+  }
+  draw();
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="card" style="padding:1rem">
+  <h2 style="margin:0 0 1rem">Day-wise Analysis Trend</h2>
+  <div style="height:420px"><canvas id="trendChart"></canvas></div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+<script>
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  let chart;
+
+  async function fetchData(){
+    const res = await fetch('/daywise_data');
+    return res.json();
+  }
+
+  async function draw(){
+    const {labels, counts} = await fetchData();
+    if(chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Detections per Day',
+          data: counts,
+          fill: true,
+          tension: 0.3,
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59,130,246,0.2)',
+          pointBackgroundColor: '#1e40af'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero:true } },
+        plugins:{ legend:{position:'bottom'} }
+      }
+    });
+  }
+
+  draw();
+</script>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="card">
+  <h2>Analysis Result</h2>
+  
+  <div class="kv">
+    <div><b>Confidence</b></div><div>{{ det.confidence | default(result.confidence, True) | round(2) }}</div>
+    <div><b>Suspect Span</b></div><div>{{ det.span_lines or result.suspect_span | default("N/A", True) }}</div>
+  </div>
+
+  <hr>
+
+  <h3>Issue Type</h3>
+  <div class="mono-clean">
+    {{ det.issue_type | default(result.issue_type, True) | default("Unknown Issue", True) }}
+  </div>
+
+  <h3>Root Cause</h3>
+  <div class="mono-clean">
+    {{ result.root_cause }}
+  </div>
+
+  <h3>Fix Explanation</h3>
+  <div class="mono-clean">
+    {{ result.explanation }}
+  </div>
+
+  <hr>
+
+  <h3>Corrected Code</h3>
+  <pre class="mono">{{ result.patched_code }}</pre>
+
+  <h3>Suggested Patch (Unified Diff)</h3>
+  {% if result.unified_diff %}
+  <pre class="diff mono">{{ result.unified_diff }}</pre>
+  {% else %}
+  <div class="muted">No patch was required or returned.</div>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h3>Your Original Code</h3>
+  <pre class="mono">{{ code }}</pre>
+</section>
+
+<p><a class="btn" href="{{ url_for('index') }}">Analyze another file</a></p>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Custom style for clean wrapping and monospace font for Root Cause and Explanation */
+.mono-clean {
+    font-family: monospace;
+    white-space: pre-wrap; /* Allows the text to wrap while preserving line breaks */
+    word-break: break-word; /* Prevents long words from breaking layout */
+    padding: 10px;
+    background-color: var(--color-bg-subtle);
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+/* Ensure code blocks stand out */
+pre.mono, pre.diff {
+    background-color: #333; /* Darker background for code */
+    color: #f8f8f2;
+    padding: 15px;
+    border-radius: 6px;
+    overflow-x: auto;
+}
+</style>
+{% endblock %}

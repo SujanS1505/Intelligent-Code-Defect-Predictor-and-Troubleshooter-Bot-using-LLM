@@ -1,0 +1,102 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="card" style="padding:1rem">
+  <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+    <h2 style="margin:0">AI Code Guardian – Issue Type Analytics</h2>
+
+    <select id="chartType" style="padding:.4rem .6rem;border-radius:.5rem;border:1px solid #ccc">
+      <option value="bar" selected>Bar</option>
+      <option value="pie">Pie</option>
+      <option value="doughnut">Doughnut</option>
+      <option value="polarArea">Polar Area</option>
+    </select>
+
+    <button id="refreshBtn" style="padding:.4rem .8rem;border:1px solid #ccc;border-radius:.5rem;cursor:pointer">
+      Refresh
+    </button>
+
+    <button id="downloadBtn" style="padding:.4rem .8rem;border:1px solid #ccc;border-radius:.5rem;cursor:pointer">
+      Download PNG
+    </button>
+  </div>
+
+  <div style="height:460px;margin-top:14px">
+    <canvas id="bugChart"></canvas>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<script>
+  const ctx = document.getElementById('bugChart').getContext('2d');
+  const COLORS = [
+    "#4e79a7","#f28e2b","#e15759","#76b7b2","#59a14f","#edc948",
+    "#b07aa1","#ff9da7","#9c755f","#bab0ab","#1f77b4","#ff7f0e"
+  ];
+  let chart;
+
+  function config(type, labels, data) {
+    return {
+      type,
+      data: {
+        labels,
+        datasets: [{
+          label: "Occurrences",
+          data,
+          backgroundColor: labels.map((_, i) => COLORS[i % COLORS.length]),
+          borderColor: "#111",
+          borderWidth: type === "bar" ? 1 : 0,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 900,
+          easing: "easeOutQuart"
+        },
+        plugins: {
+          legend: { display: type !== "bar", position: "bottom" },
+          tooltip: { enabled: true },
+          datalabels: {
+            color: "#111",
+            font: { weight: "bold" },
+            anchor: type === "bar" ? "end" : "center",
+            align: type === "bar" ? "top" : "center",
+            formatter: (val) => val
+          }
+        },
+        scales: type === "bar" ? {
+          x: { ticks: { color: "#111" } },
+          y: { beginAtZero: true, ticks: { stepSize: 1, color: "#111" } }
+        } : {}
+      },
+      plugins: [ChartDataLabels],
+    };
+  }
+
+  async function fetchData() {
+    const res = await fetch("/ganalysis_data", { cache: "no-store" });
+    return res.json();
+  }
+
+  async function draw() {
+    const type = document.getElementById("chartType").value;
+    const { labels, counts } = await fetchData();
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, config(type, labels, counts));
+  }
+
+  document.getElementById("chartType").addEventListener("change", draw);
+  document.getElementById("refreshBtn").addEventListener("click", draw);
+  document.getElementById("downloadBtn").addEventListener("click", () => {
+    if (!chart) return;
+    const link = document.createElement("a");
+    link.href = chart.toBase64Image();
+    link.download = "AI_Code_Guardian_Analysis.png";
+    link.click();
+  });
+
+  draw();
+</script>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="card">
+  <h2>Paste code or upload a file</h2>
+
+  <div class="grid" style="align-items:end">
+    <div>
+      <label>Samples</label>
+      <select id="sampleSelect">
+        <option value="">-- Choose a sample --</option>
+        {% for key, s in samples.items() %}
+          <option value="{{ key }}">{{ s.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <a class="btn" href="{{ url_for('index') }}">Reset</a>
+    </div>
+  </div>
+
+  <form id="analyzeForm" action="{{ url_for('analyze_route') }}" method="post" enctype="multipart/form-data">
+    <textarea id="codeArea" name="code" rows="14" placeholder="Paste your code here...">{{ prefill or '' }}</textarea>
+
+    <div class="grid">
+      <div>
+        <label>Language</label>
+        <select id="langSelect" name="lang">
+          <option value="python" {{ 'selected' if default_lang=='python' else '' }}>Python</option>
+          <option value="java" {{ 'selected' if default_lang=='java' else '' }}>Java</option>
+          <option value="cpp" {{ 'selected' if default_lang=='cpp' else '' }}>C/C++</option>
+          <option value="javascript" {{ 'selected' if default_lang=='javascript' else '' }}>JavaScript</option>
+        </select>
+      </div>
+	  
+	 <div class="upload-container">
+  <label>Or upload file</label>
+  <div class="upload-box">
+    <label for="fileInput" class="custom-file-upload">
+      <i class="fas fa-upload"></i> Choose File
+    </label>
+    <span id="fileName" class="file-name">No file chosen</span>
+    <input id="fileInput" type="file" name="file">
+  </div>
+</div>
+
+
+	  
+     
+    </div>
+
+    <button type="submit">Analyze</button>
+  </form>
+</section>
+
+<section class="card subtle">
+  <h3>What happens?</h3>
+  <ol>
+    <li><strong>Defect predictor</strong> flags likely bug type & span.</li>
+    <li><strong>Retriever</strong> searches local KB (FAISS) for similar fixes.</li>
+    <li><strong>LLM</strong> returns root cause & a unified-diff patch.</li>
+  </ol>
+</section>
+
+<script>
+const sel = document.getElementById('sampleSelect');
+const codeArea = document.getElementById('codeArea');
+const langSel = document.getElementById('langSelect');
+
+sel?.addEventListener('change', async (e) => {
+  const key = e.target.value;
+  if (!key) return;
+  try {
+    const res = await fetch(`/sample/${key}`);
+    if (!res.ok) throw new Error('Failed to fetch sample');
+    const s = await res.json();
+    codeArea.value = s.code || '';
+    // Set language if present
+    if (s.lang) {
+      for (const opt of langSel.options) {
+        opt.selected = (opt.value.toLowerCase() === s.lang.toLowerCase());
+      }
+    }
+    // Scroll to code area for convenience
+    codeArea.scrollIntoView({behavior:'smooth', block:'center'});
+  } catch (err) {
+    alert('Could not load sample: ' + err.message);
+  }
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const fileInput = document.getElementById("fileInput");
+  const fileNameEl = document.getElementById("fileName");
+
+  if (fileInput && fileNameEl) {
+    fileInput.addEventListener("change", function() {
+      if (this.files && this.files.length > 0) {
+        fileNameEl.textContent = this.files[0].name;
+        fileNameEl.style.color = "#0a66c2";
+        fileNameEl.style.fontWeight = "600";
+      } else {
+        fileNameEl.textContent = "No file chosen";
+        fileNameEl.style.color = "#555";
+        fileNameEl.style.fontWeight = "400";
+      }
+    });
+  }
+});
+</script>
+
+
+<style>
+.upload-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.custom-file-upload {
+  background: linear-gradient(135deg, #0a66c2, #0056b3);
+  color: white;
+  padding: 9px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.custom-file-upload:hover {
+  background: linear-gradient(135deg, #0056b3, #003f80);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+}
+
+.custom-file-upload i {
+  font-size: 0.9rem;
+}
+
+#fileInput {
+  display: none;
+}
+
+.file-name {
+  font-size: 0.9em;
+  color: #555;
+  font-style: italic;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
+
+
+{% endblock %}

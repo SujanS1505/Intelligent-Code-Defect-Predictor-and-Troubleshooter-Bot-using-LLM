@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="authPro">
+  <div class="authPro-box">
+    <h2 class="authPro-title">Create your account</h2>
+    <p class="authPro-sub">Start your AI Code Guardian workspace</p>
+
+    <form method="post" action="{{ url_for('signup_post') }}" class="authPro-form">
+      <label>
+        <span>Name</span>
+        <input type="text" name="name" required placeholder="Your name">
+      </label>
+
+      <label>
+        <span>Email</span>
+        <input type="email" name="email" required placeholder="you@example.com">
+      </label>
+
+      <label>
+        <span>Password</span>
+        <input type="password" name="password" required minlength="6" placeholder="••••••••">
+      </label>
+
+      <button class="auth-btn-primary" type="submit">Create account</button>
+
+      <div class="auth-links" style="margin-top:1.1rem">
+        <span class="muted">Already have an account?</span>
+        <a class="auth-btn-ghost" href="{{ url_for('login') }}">Log in</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,64 @@
+# ---------------------------
+# Python Cache / Build Files
+# ---------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ---------------------------
+# Virtual Environments
+# ---------------------------
+venv/
+.venv/
+env/
+ENV/
+
+# ---------------------------
+# IDE / Editor Files
+# ---------------------------
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ---------------------------
+# Jupyter & Logs
+# ---------------------------
+.ipynb_checkpoints/
+*.log
+
+# ---------------------------
+# OS Specific
+# ---------------------------
+.DS_Store
+Thumbs.db
+
+# ---------------------------
+# Django Stuff
+# ---------------------------
+*.sqlite3
+media/
+staticfiles/
+
+# ---------------------------
+# Environment / Secrets
+# ---------------------------
+*.env
+.env.*
+!env.example
+
+# ---------------------------
+# RAG / Embeddings / VectorDB
+# ---------------------------
+*.faiss
+*.hnsw
+*.bin
+index/
+chroma/
+models/

@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="auth-card">
+  <h2>Forgot your password?</h2>
+  <p class="muted">Enter your registered email. If it exists, we’ll send a reset link valid for 30 minutes.</p>
+  <form method="post" action="{{ url_for('forgot_password_post') }}" class="form-grid">
+    <label>
+      <span>Email</span>
+      <input type="email" name="email" required placeholder="you@example.com">
+    </label>
+    <button class="btn btn-primary" type="submit">Send reset link</button>
+    <p class="muted"><a href="{{ url_for('login') }}">Back to login</a></p>
+  </form>
+</section>
+{% endblock %}

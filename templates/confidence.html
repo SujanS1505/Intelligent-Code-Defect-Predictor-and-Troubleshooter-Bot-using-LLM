@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="card" style="padding:1rem">
+  <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+    <h2 style="margin:0">Average Confidence by Day</h2>
+    <button id="refreshBtn" style="padding:.4rem .8rem;border:1px solid #ccc;border-radius:.5rem;cursor:pointer">
+      Refresh
+    </button>
+    <button id="downloadBtn" style="padding:.4rem .8rem;border:1px solid #ccc;border-radius:.5rem;cursor:pointer">
+      Download PNG
+    </button>
+  </div>
+
+  <div style="height:440px;margin-top:12px">
+    <canvas id="confChart"></canvas>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+<script>
+  const ctx = document.getElementById('confChart').getContext('2d');
+  let chart;
+
+  async function fetchData(){
+    const r = await fetch('/confidence_data', { cache: 'no-store' });
+    return r.json();
+  }
+
+  function build(labels, values){
+    return {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Avg confidence',
+          data: values,
+          tension: 0.35,
+          fill: true,
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16,185,129,0.18)',
+          pointRadius: 3,
+          pointBackgroundColor: '#065f46'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: {
+            callbacks: {
+              label: (c) => ` ${c.parsed.y.toFixed(0)}%`
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            suggestedMax: 100.0,
+            ticks: { callback: v => v.toFixed(0) + "%" }
+          },
+          x: { ticks: { autoSkip: true, maxTicksLimit: 10 } }
+        },
+        animation: { duration: 600 }
+      }
+    }
+  }
+
+  async function render(){
+    const { labels, values } = await fetchData();
+    if(chart) chart.destroy();
+    chart = new Chart(ctx, build(labels, values));
+  }
+
+  document.getElementById('refreshBtn').addEventListener('click', render);
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.href = chart.toBase64Image();
+    a.download = 'confidence-trend.png';
+    a.click();
+  });
+
+  render();
+</script>
+{% endblock %}

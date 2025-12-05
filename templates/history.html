@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="card">
+  <h2>Analysis History</h2>
+  {% for entry in entries %}
+    <details style="margin-bottom: 10px;">
+      <summary>
+        **{{ entry.timestamp.strftime('%Y-%m-%d %H:%M') }}** | 
+        **Issue:** {{ entry.issue_type }} 
+        (Conf: {{ "%.2f"|format(entry.confidence) }})
+      </summary>
+      <pre class="mono" style="margin-top: 10px; padding: 10px; background: #f4f4f4; color: #333;">{{ entry.code_snippet|truncate(200) }}</pre>
+      <p>Root Cause: {{ entry.root_cause|truncate(100) }}</p>
+    </details>
+    <hr>
+  {% else %}
+    <p>No analysis history found.</p>
+  {% endfor %}
+</section>
+{% endblock %}
