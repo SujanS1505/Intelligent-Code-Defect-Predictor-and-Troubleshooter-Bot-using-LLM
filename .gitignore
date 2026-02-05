@@ -11,6 +11,7 @@ dist/
 build/
 .eggs/
 kb/
+fix.py
 kb/services/fix.py
 # ---------------------------
 # Virtual Environments
