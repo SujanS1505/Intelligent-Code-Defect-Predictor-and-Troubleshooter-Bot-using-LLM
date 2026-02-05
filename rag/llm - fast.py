@@ -8,7 +8,11 @@ from config import CODER_LLM_DIR
 # Loader with safe fallbacks
 # ----------------------------
 _DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-_tok = AutoTokenizer.from_pretrained(CODER_LLM_DIR, use_fast=True)
+_tok = AutoTokenizer.from_pretrained(
+    CODER_LLM_DIR,
+    use_fast=True,
+    clean_up_tokenization_spaces=False,
+)
 
 
 def _load_llm():
@@ -114,7 +118,8 @@ def generate_fix(lang, path, issue, span, code, passages):
         do_sample=False,
         pad_token_id=_tok.eos_token_id
     )
-    text = _tok.decode(outputs[0], skip_special_tokens=True)
+    # Avoid FutureWarning about clean_up_tokenization_spaces default change.
+    text = _tok.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
 
     s, e = text.rfind("{"), text.rfind("}")
     try:

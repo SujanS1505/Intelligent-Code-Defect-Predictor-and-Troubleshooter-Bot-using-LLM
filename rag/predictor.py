@@ -9,12 +9,27 @@ _DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 _model = None
 _tok = None
 
+# The bundled checkpoint is not fine-tuned for token classification, which causes
+# noisy warnings and unreliable predictions. Keep the heuristic fallback as the
+# default behavior, and allow opting into model loading when you provide a
+# properly fine-tuned checkpoint.
+_ENABLE_DEFECT_MODEL = (os.environ.get("ENABLE_DEFECT_MODEL") or "").strip().lower() in {"1", "true", "yes"}
+
 def _load_or_none():
     global _model, _tok
     try:
+        if not _ENABLE_DEFECT_MODEL:
+            _model = None
+            _tok = None
+            return
+
         # For CodeT5p, sentencepiece slow tokenizer avoids Windows issues
         use_fast = False
-        _tok = AutoTokenizer.from_pretrained(DEFECT_PREDICTOR_DIR, use_fast=use_fast)
+        _tok = AutoTokenizer.from_pretrained(
+            DEFECT_PREDICTOR_DIR,
+            use_fast=use_fast,
+            clean_up_tokenization_spaces=False,
+        )
         if _tok.pad_token is None:
             _tok.pad_token = _tok.eos_token
         _model = AutoModelForTokenClassification.from_pretrained(DEFECT_PREDICTOR_DIR)

@@ -13,7 +13,6 @@ from config import SECRET_KEY, MAX_CODE_LEN
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from flask import jsonify, request
-from kb.services.fix import analyze_and_fix
 import re
 app = Flask(__name__)
 app.config["SECRET_KEY"] = SECRET_KEY
@@ -24,14 +23,22 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
-# --- Email config (use your SMTP or start with console-friendly settings) ---
-app.config["MAIL_SERVER"] = "smtp.gmail.com"          # e.g., smtp.gmail.com
-app.config["MAIL_PORT"] = 465
-app.config["MAIL_USE_SSL"] = True
-app.config["MAIL_USE_TLS"] = False
-app.config["MAIL_USERNAME"] = "studenttesting2023@gmail.com"  # your email
-app.config["MAIL_PASSWORD"] = "kzyoheatzfwfezmq" # app password
-app.config["MAIL_DEFAULT_SENDER"] = "studenttesting2023@gmail.com";
+"""Email config.
+
+For local/dev: leave credentials unset. The app will still work and will print a reset link
+to the console if sending fails.
+
+To enable sending, set:
+- MAIL_USERNAME
+- MAIL_PASSWORD (Gmail app password if using Gmail)
+"""
+app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
+app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT", "465"))
+app.config["MAIL_USE_SSL"] = os.environ.get("MAIL_USE_SSL", "true").lower() in {"1", "true", "yes"}
+app.config["MAIL_USE_TLS"] = os.environ.get("MAIL_USE_TLS", "false").lower() in {"1", "true", "yes"}
+app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
+app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER") or app.config["MAIL_USERNAME"]
 
 # A distinct salt for signing reset tokens (do not share publicly)
 app.config["SECURITY_PASSWORD_SALT"] = "7yLx!R@93_Secret_Salt_2025"

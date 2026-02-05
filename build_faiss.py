@@ -7,7 +7,11 @@ from config import EMB_MODEL_DIR, KB_JSONL, FAISS_INDEX, FAISS_IDS
 os.makedirs(os.path.dirname(FAISS_INDEX), exist_ok=True)
 
 # Load embedder model (CodeBERT etc.)
-tok = AutoTokenizer.from_pretrained(EMB_MODEL_DIR, use_fast=True)
+tok = AutoTokenizer.from_pretrained(
+    EMB_MODEL_DIR,
+    use_fast=True,
+    clean_up_tokenization_spaces=False,
+)
 enc = AutoModel.from_pretrained(EMB_MODEL_DIR).eval()
 
 # Load KB

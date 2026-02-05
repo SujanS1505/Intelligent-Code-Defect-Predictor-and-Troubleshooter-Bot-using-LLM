@@ -24,7 +24,11 @@ def _load_llm():
     
     try:
         # 1. Load tokenizer first
-        _tok = AutoTokenizer.from_pretrained(CODER_LLM_DIR, use_fast=True)
+        _tok = AutoTokenizer.from_pretrained(
+            CODER_LLM_DIR,
+            use_fast=True,
+            clean_up_tokenization_spaces=False,
+        )
         
         # 2. Load model
         if _DEVICE == "cuda":
@@ -219,7 +223,8 @@ def generate_fix(lang, path, issue, span, code, passages):
         # ---------------------------------------------------------------
         pad_token_id=_tok.eos_token_id
     )
-    text = _tok.decode(outputs[0], skip_special_tokens=True)
+    # Avoid FutureWarning about clean_up_tokenization_spaces default change.
+    text = _tok.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
 
     s, e = text.rfind("{"), text.rfind("}")
     try:

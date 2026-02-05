@@ -11,7 +11,11 @@ try:
 except Exception as e:
     print("[retriever] FAISS unavailable, will use NumPy cosine:", e)
 
-_tok = AutoTokenizer.from_pretrained(EMB_MODEL_DIR, use_fast=True)
+_tok = AutoTokenizer.from_pretrained(
+    EMB_MODEL_DIR,
+    use_fast=True,
+    clean_up_tokenization_spaces=False,
+)
 _enc = AutoModel.from_pretrained(EMB_MODEL_DIR).eval()
 
 def _embed(texts, max_len=256):
