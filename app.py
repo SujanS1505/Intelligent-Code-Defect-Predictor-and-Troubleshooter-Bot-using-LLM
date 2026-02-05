@@ -146,7 +146,11 @@ class User(db.Model, UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    # SQLAlchemy 2.x: Query.get() is legacy; use Session.get()
+    try:
+        return db.session.get(User, int(user_id))
+    except Exception:
+        return User.query.get(int(user_id))
 # --------------------------------
 
 # --------- History model ----------
@@ -672,4 +676,9 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
         print("Database tables created successfully (history.db).")
-    app.run(debug=True)
+    # Debug reloader on Windows can restart the process repeatedly when
+    # torch/transformers touch files under site-packages, leading to reload loops
+    # and repeated model loads (RAM/VRAM spikes). Keep debug optional but disable
+    # the watchdog reloader for stability.
+    debug = (os.environ.get("FLASK_DEBUG") or os.environ.get("DEBUG") or "").strip().lower() in {"1", "true", "yes"}
+    app.run(debug=debug, use_reloader=False)
