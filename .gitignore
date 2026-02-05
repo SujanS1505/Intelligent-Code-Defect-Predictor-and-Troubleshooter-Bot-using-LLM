@@ -10,7 +10,8 @@ __pycache__/
 dist/
 build/
 .eggs/
-
+kb/
+kb/services/fix.py
 # ---------------------------
 # Virtual Environments
 # ---------------------------
