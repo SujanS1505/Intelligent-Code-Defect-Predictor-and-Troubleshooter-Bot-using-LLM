@@ -4,7 +4,7 @@
   <h2>Analysis Result</h2>
   
   <div class="kv">
-    <div><b>Confidence</b></div><div>{{ det.confidence | default(result.confidence, True) | round(2) }}</div>
+    <div><b>Confidence</b></div><div>{{ det.confidence | default(result.confidence, True) | float | round(2) }}</div>
     <div><b>Suspect Span</b></div><div>{{ det.span_lines or result.suspect_span | default("N/A", True) }}</div>
   </div>
 

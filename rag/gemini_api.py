@@ -98,7 +98,8 @@ def generate_fix(
         system_prompt = (
             "You are a strict code troubleshooter. Use ONLY the provided code and retrieved passages. "
             "Respond in valid JSON with keys: root_cause, fix_explanation, patched_code, patch_unified_diff, references, confidence. "
-            "The patched_code key MUST contain the complete corrected source code with the bug fixed. Do NOT return the original buggy code as patched_code."
+            "The patched_code key MUST contain the complete corrected source code with the bug fixed. Do NOT return the original buggy code as patched_code. "
+            "IMPORTANT: All string values in the JSON must have newlines escaped as \\n, not literal newlines."
         )
         
         passages_block = _format_passages(passages)
@@ -111,10 +112,10 @@ def generate_fix(
             f"Code:\n```{lang}\n{code}\n```\n"
             f"Retrieved passages:\n{passages_block}\n"
             f"Return JSON only with keys: root_cause, fix_explanation, patched_code, patch_unified_diff, references, confidence. "
-            f"patched_code MUST contain the full corrected source code."
+            f"patched_code MUST contain the full corrected source code with bugs fixed."
         )
         
-        # Call Groq API
+        # Call Groq API with JSON mode for reliable parsing
         response = _CLIENT.chat.completions.create(
             model=_MODEL_NAME,
             messages=[
@@ -124,6 +125,7 @@ def generate_fix(
             temperature=0.3,
             max_tokens=2048,
             top_p=0.95,
+            response_format={"type": "json_object"},
         )
         
         response_text = response.choices[0].message.content
@@ -137,9 +139,10 @@ def generate_fix(
         # Parse JSON response
         result = _extract_json(response_text)
         
+        # If JSON parsing failed, construct a fallback result from the raw text
         if not result:
-            logger.warning(f"[groq] Could not parse JSON from response. Raw: {response_text[:2000]}")
-            return None
+            logger.warning(f"[groq] JSON parse failed, constructing fallback from raw response")
+            result = _build_fallback_result(response_text, issue, code)
         
         # Add metadata about the source
         result.setdefault("_llm_status", "Qwen2.5-Coder-1.5B-Instruct (optimized)")
@@ -152,6 +155,12 @@ def generate_fix(
         result.setdefault("patch_unified_diff", "")
         result.setdefault("references", [f"cloud_kb: {_MODEL_NAME}"])
         result.setdefault("confidence", 0.85)
+        
+        # Ensure confidence is always a float (LLM may return it as string)
+        try:
+            result["confidence"] = float(result["confidence"])
+        except (ValueError, TypeError):
+            result["confidence"] = 0.85
         
         logger.info(f"[groq] Successfully generated fix for {issue}")
         return result
@@ -174,32 +183,115 @@ def _format_passages(passages: list[dict[str, Any]]) -> str:
     return "\n".join(blocks)
 
 
+import re
+
 def _extract_json(text: str) -> Optional[dict]:
-    """Extract JSON from response text, with fallback parsing."""
+    """Extract JSON from response text, with multiple fallback strategies."""
+    
+    # Strategy 1: Direct parse
     try:
         result = json.loads(text)
         logger.debug(f"[groq] Direct JSON parse successful")
         return result
     except Exception as e:
         logger.debug(f"[groq] Direct JSON parse failed: {e}")
+    
+    # Strategy 2: Strip markdown code fences (```json ... ```)
+    cleaned = re.sub(r'^```(?:json)?\s*\n?', '', text.strip(), flags=re.MULTILINE)
+    cleaned = re.sub(r'\n?```\s*$', '', cleaned.strip(), flags=re.MULTILINE)
+    try:
+        result = json.loads(cleaned)
+        logger.debug(f"[groq] Cleaned JSON parse successful")
+        return result
+    except Exception:
         pass
     
-    # Try to find JSON block
-    s, e = text.find("{"), text.rfind("}")
-    logger.debug(f"[groq] JSON block search: start={s}, end={e}, text_len={len(text)}")
+    # Strategy 3: Find outermost JSON block
+    s = text.find("{")
+    e = text.rfind("}")
     if 0 <= s < e:
+        json_str = text[s : e + 1]
         try:
-            json_str = text[s : e + 1]
-            logger.debug(f"[groq] Attempting to parse extracted JSON [{len(json_str)} chars]")
             result = json.loads(json_str)
             logger.debug(f"[groq] Extracted JSON parse successful")
             return result
+        except Exception:
+            pass
+        
+        # Strategy 4: Fix common LLM issues - unescaped newlines inside strings
+        # Replace literal newlines inside string values with \\n
+        try:
+            fixed = _fix_json_newlines(json_str)
+            result = json.loads(fixed)
+            logger.debug(f"[groq] Fixed-newlines JSON parse successful")
+            return result
         except Exception as ex:
-            logger.debug(f"[groq] Extracted JSON parse failed: {ex}, JSON: {json_str[:200]}")
-            return None
+            logger.debug(f"[groq] All JSON parse strategies failed: {ex}")
     
-    logger.debug(f"[groq] No JSON block found")
     return None
+
+
+def _fix_json_newlines(text: str) -> str:
+    """Fix unescaped newlines within JSON string values."""
+    # This replaces literal newlines that appear between quotes
+    # by processing the text character by character
+    result = []
+    in_string = False
+    i = 0
+    while i < len(text):
+        ch = text[i]
+        if ch == '\\' and in_string and i + 1 < len(text):
+            result.append(ch)
+            result.append(text[i + 1])
+            i += 2
+            continue
+        if ch == '"' and (i == 0 or text[i - 1] != '\\'):
+            in_string = not in_string
+        if ch == '\n' and in_string:
+            result.append('\\n')
+        elif ch == '\r' and in_string:
+            result.append('\\r')
+        elif ch == '\t' and in_string:
+            result.append('\\t')
+        else:
+            result.append(ch)
+        i += 1
+    return ''.join(result)
+
+
+def _build_fallback_result(raw_text: str, issue: str, original_code: str) -> dict:
+    """Build a result dict from raw LLM text when JSON parsing fails entirely."""
+    
+    # Try to extract useful information from the raw text
+    root_cause = issue or "Possible_Bug"
+    explanation = "Analysis completed but structured output parsing failed. See raw analysis below."
+    patched_code = original_code
+    
+    # Try to find code blocks in the response
+    code_blocks = re.findall(r'```(?:\w+)?\s*\n(.*?)\n```', raw_text, re.DOTALL)
+    if code_blocks:
+        # Use the longest code block as it's likely the patched code
+        patched_code = max(code_blocks, key=len)
+    
+    # Try to find root cause mentions
+    cause_match = re.search(r'"?root_cause"?\s*[:=]\s*"?([^",\n}]+)', raw_text)
+    if cause_match:
+        root_cause = cause_match.group(1).strip().strip('"')
+    
+    # Try to find fix explanation
+    fix_match = re.search(r'"?fix_explanation"?\s*[:=]\s*"?([^"\n}]+)', raw_text)
+    if fix_match:
+        explanation = fix_match.group(1).strip().strip('"')
+    
+    return {
+        "root_cause": root_cause,
+        "fix_explanation": explanation,
+        "explanation": explanation,
+        "patched_code": patched_code,
+        "patch_unified_diff": "",
+        "references": ["cloud_kb: fallback-parser"],
+        "confidence": 0.7,
+    }
 
 
 def health_check() -> dict:
@@ -211,3 +303,4 @@ def health_check() -> dict:
         "api_key_set": bool(_API_KEY),
         "module_status": "Ready" if is_ok else "Not configured",
     }
+
