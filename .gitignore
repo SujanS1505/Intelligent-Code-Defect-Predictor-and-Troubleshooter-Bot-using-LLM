@@ -1,4 +1,11 @@
 # ---------------------------
+# Environment Variables (NEVER commit these!)
+# ---------------------------
+.env
+.env.local
+.env.*.local
+
+# ---------------------------
 # Python Cache / Build Files
 # ---------------------------
 __pycache__/
