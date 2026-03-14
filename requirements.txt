@@ -1,0 +1,10 @@
+Flask
+Flask-Login
+Flask-Mail
+Flask-SQLAlchemy
+itsdangerous
+numpy
+faiss-cpu
+transformers
+torch
+Faker
